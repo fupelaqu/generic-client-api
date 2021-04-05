@@ -83,8 +83,8 @@ val logback = Seq(
 )
 
 val scalatest = Seq(
-  "org.scalatest"          %% "scalatest"  % Versions.scalatest  % Test,
-  "org.scalacheck"         %% "scalacheck" % Versions.scalacheck % Test
+  "org.scalatest"  %% "scalatest"  % Versions.scalatest  % Test,
+  "org.scalacheck" %% "scalacheck" % Versions.scalacheck % Test
 )
 
 libraryDependencies ++=
