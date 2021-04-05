@@ -8,7 +8,7 @@ object Versions {
 
   val jackson = "2.10.1"
 
-  val json4s = "3.6.6"
+  val json4s = "3.6.7"
 
   val scalaLogging = "3.9.2"
 
