@@ -17,7 +17,7 @@ object JavaTimeSerializers {
 case object LocalDateTimeISOSerializer
   extends CustomSerializer[jt.LocalDateTime](format => {
 
-    val isoFormat                             = jt.format.DateTimeFormatter.ISO_DATE_TIME
+    val isoFormat                             = jt.format.DateTimeFormatter.ISO_OFFSET_DATE_TIME
     def isValidDateTime(str: String): Boolean = Try(isoFormat.parse(str)).isSuccess
 
     (
