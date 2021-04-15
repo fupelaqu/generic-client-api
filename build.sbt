@@ -98,6 +98,14 @@ libraryDependencies ++=
   logback ++
   scalatest
 
+publishArtifact in (Test, packageBin) := true
+
+// enable publishing the test API jar
+publishArtifact in (Test, packageDoc) := true
+
+// enable publishing the test sources jar
+publishArtifact in (Test, packageSrc) := true
+
 lazy val root = project.in(file("."))
   .configs(IntegrationTest)
   .settings(Defaults.itSettings, BuildInfoSettings.settings, pbSettings)
