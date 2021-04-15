@@ -19,15 +19,12 @@ import de.heikoseeberger.akkahttpjson4s.Json4sSupport
 
 import org.json4s.{Formats, jackson}
 
-import scala.concurrent.{Await, Future, ExecutionContext}
-import scala.concurrent.duration._
-
-import scala.util.{Failure, Success, Try}
+import scala.concurrent.{Future, ExecutionContext}
 
 /**
   * Created by smanciot on 01/04/2021.
   */
-trait GenericApi extends Json4sSupport with StrictLogging {_: Authenticator =>
+trait GenericApi extends Completion with Json4sSupport with StrictLogging {_: Authenticator =>
   implicit def system: ActorSystem
 
   implicit def ec: ExecutionContext
@@ -35,13 +32,6 @@ trait GenericApi extends Json4sSupport with StrictLogging {_: Authenticator =>
   implicit def mat: Materializer
 
   def config: ApiConfig
-
-  /**
-    *
-    * maximum wait time, which may be negative (no waiting is done),
-    * [[scala.concurrent.duration.Duration.Inf Duration.Inf]] for unbounded waiting, or a finite positive duration
-    */
-  def timeOut = 10.seconds
 
   implicit val serialization = jackson.Serialization
 
@@ -61,7 +51,7 @@ trait GenericApi extends Json4sSupport with StrictLogging {_: Authenticator =>
   protected def doGet[Response: Manifest, Error: Manifest](api: String,
                                                            query: Map[String, String] = Map.empty,
                                                            headers: List[HttpHeader] = List(RawHeader("Accept", "*/*"))
-                                                          ): Either[Error, Response] = {
+                                                          ): Future[Either[Error, Response]] = {
     executeWithoutRequest[Response, Error](api, HttpMethods.GET, query, headers)
   }
 
@@ -79,7 +69,7 @@ trait GenericApi extends Json4sSupport with StrictLogging {_: Authenticator =>
                                                                                entity: Request,
                                                                                query: Map[String, String] = Map.empty,
                                                                                headers: List[HttpHeader] = List(RawHeader("Accept", "*/*"))
-                                                                              ): Either[Error, Response] = {
+                                                                              ): Future[Either[Error, Response]] = {
     execute[Request, Response, Error](api, entity, HttpMethods.POST, query, headers)
   }
 
@@ -97,7 +87,7 @@ trait GenericApi extends Json4sSupport with StrictLogging {_: Authenticator =>
                                                                               entity: Request,
                                                                               query: Map[String, String] = Map.empty,
                                                                               headers: List[HttpHeader] = List(RawHeader("Accept", "*/*"))
-                                                                             ): Either[Error, Response] = {
+                                                                             ): Future[Either[Error, Response]] = {
     execute[Request, Response, Error](api, entity, HttpMethods.PUT, query, headers)
   }
 
@@ -116,7 +106,7 @@ trait GenericApi extends Json4sSupport with StrictLogging {_: Authenticator =>
                                                                entity: Request,
                                                                query: Map[String, String] = Map.empty,
                                                                headers: List[HttpHeader] = List(RawHeader("Accept", "*/*")))(
-    implicit ev: Error => Throwable): Either[Error, Response] = {
+    implicit ev: Error => Throwable): Future[Either[Error, Response]] = {
     execute[Request, Response, Error](api, entity, HttpMethods.PATCH, query, headers)
   }
 
@@ -132,7 +122,7 @@ trait GenericApi extends Json4sSupport with StrictLogging {_: Authenticator =>
   protected def doDelete[Response: Manifest, Error: Manifest](api: String,
                                                               query: Map[String, String] = Map.empty,
                                                               headers: List[HttpHeader] = List(RawHeader("Accept", "*/*"))
-                                                             ): Either[Error, Response] = {
+                                                             ): Future[Either[Error, Response]] = {
     execute[Map[String, String], Response, Error](api, Map.empty, HttpMethods.DELETE, query, headers)
   }
 
@@ -141,7 +131,7 @@ trait GenericApi extends Json4sSupport with StrictLogging {_: Authenticator =>
                                                                            method: HttpMethod = HttpMethods.GET,
                                                                            query: Map[String, String] = Map.empty,
                                                                            headers: List[HttpHeader] = List.empty
-                                                                          ): Either[Error, Unit] = {
+                                                                          ): Future[Either[Error, Unit]] = {
     execute[Request, Unit, Error](api, entity, method, query, headers, withResponse = false)
   }
 
@@ -149,7 +139,7 @@ trait GenericApi extends Json4sSupport with StrictLogging {_: Authenticator =>
                                                                             method: HttpMethod = HttpMethods.GET,
                                                                             query: Map[String, String] = Map.empty,
                                                                             headers: List[HttpHeader] = List.empty
-                                                                           ): Either[Error, Response] = {
+                                                                           ): Future[Either[Error, Response]] = {
     execute[Map[String, String], Response, Error](api, Map.empty, method, query, headers)
   }
 
@@ -157,7 +147,7 @@ trait GenericApi extends Json4sSupport with StrictLogging {_: Authenticator =>
                                                                   method: HttpMethod = HttpMethods.GET,
                                                                   query: Map[String, String] = Map.empty,
                                                                   headers: List[HttpHeader] = List.empty
-                                                                 ): Either[Error, Unit] = {
+                                                                 ): Future[Either[Error, Unit]] = {
     execute[Map[String, String], Unit, Error](api, Map.empty, method, query, headers, withResponse = false)
   }
 
@@ -167,7 +157,7 @@ trait GenericApi extends Json4sSupport with StrictLogging {_: Authenticator =>
                                                                                     query: Map[String, String] = Map.empty,
                                                                                     headers: List[HttpHeader] = List.empty,
                                                                                     withResponse: Boolean = true
-                                                                                   ): Either[Error, Response] = {
+                                                                                   ): Future[Either[Error, Response]] = {
     val serialized = serialization.write[Request](entity)
     logger.debug(s"Request -> $serialized")
     authenticate(HttpRequest(
@@ -178,43 +168,44 @@ trait GenericApi extends Json4sSupport with StrictLogging {_: Authenticator =>
       )
       .withHeaders(headers)
       .withEntity(HttpEntity(ContentTypes.`application/json`, serialized))
-    ) match {
+    ) flatMap {
       case Right(request) =>
-        Try(Await.result(
-          Source
-            .single(request)
-            .via(connection)
-            .mapAsync(1)(response =>
-              if(response.status.isFailure()){
-                Unmarshal(response).to[Error]
-              }
-              else if(withResponse){
-                Unmarshal(response).to[Response]
-              }
-              else{
-                Future.successful(response)
-              }
-            )
-            .runWith(Sink.head)
-            .map(Right.apply)
-            .recover {
-              case ex => Left(ex)
+        Source
+          .single(request)
+          .via(connection)
+          .mapAsync(1)(response =>
+            if(response.status.isFailure()){
+              Unmarshal(response).to[Error].flatMap(error => Future.failed(GenericApiError(error)))
             }
-          ,
-          timeOut
-        )) match {
-          case Success(s) =>
-            s match {
-              case Left(f) => throw f
-              case Right(r) =>
-                r match {
-                  case e: Error => Left(e)
-                  case _ => Right(r.asInstanceOf[Response])
-                }
+            else{
+              Future.successful(response)
             }
-          case Failure(f) => throw f
+          )
+          .mapAsync(1)(response =>
+            if(withResponse){
+              Unmarshal(response).to[Response].flatMap(r => Future.successful(Some(r)))
+            }
+            else{
+              Future.successful(None)
+            }
+          )
+          .runWith(Sink.head)
+          .map(Right.apply)
+          .recover {
+            case ex => Left(ex)
+          } flatMap {
+          case Left(l) =>
+            l match {
+              case ex: GenericApiError[Error] => Future.successful(Left(ex.error))
+              case ex => Future.failed(ex)
+            }
+          case Right(r) =>
+            r match {
+              case Some(s) => Future.successful(Right(s))
+              case None => Future.successful(Right(().asInstanceOf[Response]))
+            }
         }
-      case Left(f) => throw f
+      case Left(f) => Future.failed(f)
     }
   }
 
@@ -241,3 +232,4 @@ trait ApiConfig {
     }
 }
 
+private[this] case class GenericApiError[Error: Manifest](error: Error) extends Throwable

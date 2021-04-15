@@ -27,7 +27,7 @@ organization := "app.softnetwork.api"
 
 name := "generic-client-api"
 
-version := "0.1.2"
+version := "0.1.3"
 
 scalaVersion := "2.12.11"
 
