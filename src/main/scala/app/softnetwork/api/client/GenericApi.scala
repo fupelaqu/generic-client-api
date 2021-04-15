@@ -20,6 +20,7 @@ import de.heikoseeberger.akkahttpjson4s.Json4sSupport
 import org.json4s.{Formats, jackson}
 
 import scala.concurrent.{Future, ExecutionContext}
+import scala.util.{Failure, Success}
 
 /**
   * Created by smanciot on 01/04/2021.
@@ -230,6 +231,16 @@ trait ApiConfig {
     else {
       Some(site.getPort)
     }
+}
+
+object ApiCompletion extends Completion {
+  implicit class ApiSync[E: Manifest, T](future: Future[Either[E, T]]){
+    def sync[U](fun: Either[E, T] => U) =
+      future complete() match {
+        case Success(s) => fun(s)
+        case Failure(f) => throw f
+      }
+  }
 }
 
 private[this] case class GenericApiError[Error: Manifest](error: Error) extends Throwable

@@ -1,5 +1,3 @@
-import sbt.Resolver
-
 import Common._
 import app.softnetwork.sbt.build._
 
