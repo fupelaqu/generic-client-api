@@ -4,6 +4,8 @@ import org.json4s.ext.{JavaTypesSerializers, JodaTimeSerializers}
 import org.json4s.jackson.Serialization
 import org.json4s._
 
+import app.softnetwork.serialization.JavaTimeSerializers
+
 import scala.language.implicitConversions
 
 /**

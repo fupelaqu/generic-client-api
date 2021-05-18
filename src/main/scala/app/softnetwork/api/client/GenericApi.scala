@@ -11,6 +11,9 @@ import akka.http.scaladsl.unmarshalling.Unmarshal
 
 import akka.stream.Materializer
 import akka.stream.scaladsl.{Sink, Source, Flow}
+
+import app.softnetwork.concurrent.Completion
+
 import app.softnetwork.api.client.auth.Authenticator
 
 import com.typesafe.scalalogging.StrictLogging
