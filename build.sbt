@@ -25,13 +25,13 @@ organization := "app.softnetwork.api"
 
 name := "generic-client-api"
 
-version := "0.2.0"
+version := "0.2.1"
 
 scalaVersion := "2.12.11"
 
 scalacOptions ++= Seq("-deprecation", "-feature")
 
-parallelExecution in Test := false
+Test / parallelExecution := false
 
 resolvers ++= Seq(
   "Maven Central Server" at "https://repo1.maven.org/maven2",
@@ -47,7 +47,7 @@ val akkaHttp: Seq[ModuleID] = Seq(
 libraryDependencies ++=
   Seq(
     "com.github.dakatsuka" %% "akka-http-oauth2-client" % "0.2.0" excludeAll ExclusionRule(organization = "com.typesafe.akka", name="akka-http_2.12"),
-    "app.softnetwork.persistence" %% "persistence-common" % "0.1.1"
+    "app.softnetwork.persistence" %% "persistence-common" % "0.1.6.0-rc2"
   ) ++ akkaHttp
 
 lazy val root = project.in(file("."))
