@@ -25,7 +25,7 @@ organization := "app.softnetwork.api"
 
 name := "generic-client-api"
 
-version := "0.2.1"
+version := "0.2.2"
 
 scalaVersion := "2.12.11"
 
@@ -40,6 +40,7 @@ resolvers ++= Seq(
 )
 
 val akkaHttp: Seq[ModuleID] = Seq(
+  "com.typesafe.akka" %% "akka-stream" % Versions.akka,
   "com.typesafe.akka" %% "akka-http" % Versions.akkaHttp,
   "de.heikoseeberger" %% "akka-http-json4s" % Versions.akkaHttpJson4s excludeAll ExclusionRule(organization = "com.typesafe.akka", name="akka-http_2.12")
 )
@@ -47,7 +48,7 @@ val akkaHttp: Seq[ModuleID] = Seq(
 libraryDependencies ++=
   Seq(
     "com.github.dakatsuka" %% "akka-http-oauth2-client" % "0.2.0" excludeAll ExclusionRule(organization = "com.typesafe.akka", name="akka-http_2.12"),
-    "app.softnetwork.persistence" %% "persistence-common" % "0.1.6.0-rc2"
+    "app.softnetwork.persistence" %% "persistence-common" % "0.1.6.3"
   ) ++ akkaHttp
 
 lazy val root = project.in(file("."))

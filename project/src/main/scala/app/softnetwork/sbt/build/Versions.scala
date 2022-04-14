@@ -2,8 +2,10 @@ package app.softnetwork.sbt.build
 
 object Versions {
 
-  val akkaHttp = "10.1.11"
+  val akka = "2.6.18"
 
-  val akkaHttpJson4s = "1.31.0"
+  val akkaHttp = "10.1.15"
+
+  val akkaHttpJson4s = "1.33.0"
 
 }
