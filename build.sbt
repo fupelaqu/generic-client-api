@@ -25,7 +25,7 @@ organization := "app.softnetwork.api"
 
 name := "generic-client-api"
 
-version := "0.2.3"
+version := "0.2.4"
 
 scalaVersion := "2.12.11"
 
@@ -48,7 +48,7 @@ val akkaHttp: Seq[ModuleID] = Seq(
 libraryDependencies ++=
   Seq(
     "com.github.dakatsuka" %% "akka-http-oauth2-client" % "0.2.0" excludeAll ExclusionRule(organization = "com.typesafe.akka", name="akka-http_2.12"),
-    "app.softnetwork.persistence" %% "persistence-common" % "0.1.6.3"
+    "app.softnetwork.persistence" %% "persistence-common" % Versions.genericPersistence
   ) ++ akkaHttp
 
 lazy val root = project.in(file("."))
