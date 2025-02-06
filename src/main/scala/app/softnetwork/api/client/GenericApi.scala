@@ -237,7 +237,7 @@ trait GenericApi extends Completion with Json4sSupport with StrictLogging { _: A
           case Left(l) =>
             l match {
               case ex: GenericApiError[Error] => Future.successful(Left(ex.error))
-              case ex                         => Future.failed(ex)
+              case ex: Throwable              => Future.failed(ex)
             }
           case Right(r) =>
             r match {

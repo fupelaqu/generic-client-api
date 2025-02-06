@@ -1,5 +1,3 @@
-package app.softnetwork.sbt.build
-
 object Versions {
 
   val akka = "2.6.20"
@@ -8,6 +6,5 @@ object Versions {
 
   val akkaHttpJson4s = "1.39.2"
 
-  val genericPersistence = "0.3.2.3"
-
+  val genericPersistence = "0.6.2.1"
 }

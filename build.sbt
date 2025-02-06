@@ -1,33 +1,11 @@
-import Common._
-import app.softnetwork.sbt.build._
-
-/////////////////////////////////
-// Defaults
-/////////////////////////////////
-
-app.softnetwork.sbt.build.Publication.settings
-
-/////////////////////////////////
-// Useful aliases
-/////////////////////////////////
-
-addCommandAlias("cd", "project") // navigate the projects
-
-addCommandAlias("cc", ";clean;compile") // clean and compile
-
-addCommandAlias("pl", ";clean;publishLocal") // clean and publish locally
-
-addCommandAlias("pr", ";clean;publish") // clean and publish globally
-
-shellPrompt := prompt
 
 organization := "app.softnetwork.api"
 
 name := "generic-client-api"
 
-version := "0.2.4"
+version := "0.3-SNAPSHOT"
 
-scalaVersion := "2.12.11"
+scalaVersion := "2.12.18"
 
 scalacOptions ++= Seq("-deprecation", "-feature")
 
@@ -53,5 +31,5 @@ libraryDependencies ++=
 
 lazy val root = project.in(file("."))
   .configs(IntegrationTest)
-  .settings(Defaults.itSettings)
-  .enablePlugins(JavaAppPackaging)
+  .settings(Defaults.itSettings, app.softnetwork.Info.infoSettings)
+  .enablePlugins(BuildInfoPlugin, JavaAppPackaging)
