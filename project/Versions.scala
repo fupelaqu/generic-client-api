@@ -6,5 +6,5 @@ object Versions {
 
   val akkaHttpJson4s = "1.39.2"
 
-  val genericPersistence = "0.7.0"
+  val genericPersistence = "0.7.1"
 }
