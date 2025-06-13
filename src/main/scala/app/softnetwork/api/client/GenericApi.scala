@@ -200,7 +200,9 @@ trait GenericApi extends Completion with Json4sSupport with StrictLogging { _: A
     withResponse: Boolean = true
   ): Future[Either[Error, Response]] = {
     val serialized = serialization.write[Request](entity)
-    logger.debug(s"Request -> $serialized")
+    if (config.debug) {
+      logger.info(s"Request -> $serialized")
+    }
     authenticate(
       HttpRequest(
         method = method,
@@ -259,6 +261,7 @@ trait GenericApi extends Completion with Json4sSupport with StrictLogging { _: A
 
 trait ApiConfig {
   def baseUrl: String
+  def debug: Boolean = false
   lazy val site: URI = URI.create(baseUrl)
 
   lazy val host: String = site.getHost
